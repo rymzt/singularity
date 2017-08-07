@@ -21,3 +21,21 @@ fi
 SINGULARITYENV_HISTFILE=""
 
 export SINGULARITYENV_PATH SINGULARITYENV_HISTFILE
+
+
+# For Infiniband setting on AAIC
+for i in `ldconfig -p | grep -E "/libib|/libgpfs|/libnuma|/libmlx|/libnl"`; do
+    if [ -f "$i" ]; then
+        message 2 "Found a library: $i\n"
+        if [ -z "${SINGULARITY_CONTAINLIBS:-}" ]; then
+            SINGULARITY_CONTAINLIBS="$i"
+        else
+            SINGULARITY_CONTAINLIBS="$SINGULARITY_CONTAINLIBS,$i"
+        fi
+    fi
+done
+if [ -z "${SINGULARITY_CONTAINLIBS:-}" ]; then
+    message WARN  "Could not find any IB-related libraries on this host!\n";
+else
+    export SINGULARITY_CONTAINLIBS
+fi
