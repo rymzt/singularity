@@ -109,6 +109,7 @@
 #bind path = /scratch
 bind path = /etc/localtime
 bind path = /etc/hosts
+bind path = /etc/libibverbs.d
 
 
 # USER BIND CONTROL: [BOOL]
