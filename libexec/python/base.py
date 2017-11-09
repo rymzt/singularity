@@ -19,14 +19,14 @@ import os
 
 
 try:
+    # TODO: from urllib.* import install_opener, build_opener, HTTPRedirectHandler
     from urllib.parse import urlencode, urlparse
-    from urllib.request import urlopen, Request, unquote, build_opener
+    from urllib.request import urlopen, Request, unquote
     from urllib.error import HTTPError
 except ImportError:
     from urllib import urlencode, unquote
     from urlparse import urlparse
-    from urllib2 import urlopen, install_opener, build_opener
-    from urllib2 import Request, HTTPError, HTTPRedirectHandler
+    from urllib2 import urlopen, Request, HTTPError, install_opener, build_opener, HTTPRedirectHandler
 
 
 class MultiProcess(object):
