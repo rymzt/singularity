@@ -148,6 +148,9 @@ class DockerApiConnection(ApiConnection):
         returned for a request.
         https://docs.docker.com/registry/spec/auth/token/
         '''
+
+        if auth is None:
+            auth = self.auth
         if self.token_url is None:
 
             if response is None:
@@ -266,8 +269,13 @@ class DockerApiConnection(ApiConnection):
         bot.verbose("Obtaining tags: %s" % base)
 
         # We use get_tags for a testing endpoint in update_token
+        headers=dict()
+        if self.auth is not None:
+            headers.update(self.auth)
         response = self.get(base,
-                            return_response=return_response)
+                            return_response=return_response,
+                            default_headers=False,
+                            headers=headers)
 
         if return_response:
             return response

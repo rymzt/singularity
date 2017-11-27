@@ -19,13 +19,14 @@ import os
 
 
 try:
+    # TODO: layer downloading get 504 response
     from urllib.parse import urlencode, urlparse
-    from urllib.request import urlopen, Request, unquote
+    from urllib.request import urlopen, Request, unquote, install_opener, build_opener, HTTPRedirectHandler
     from urllib.error import HTTPError
 except ImportError:
     from urllib import urlencode, unquote
     from urlparse import urlparse
-    from urllib2 import urlopen, Request, HTTPError
+    from urllib2 import urlopen, Request, HTTPError, install_opener, build_opener, HTTPRedirectHandler
 
 
 class MultiProcess(object):
@@ -125,6 +126,20 @@ def multi_wrapper(func_args):
 def multi_package(func, args):
     return zip(itertools.repeat(func), args)
 
+class RemoveAuthorizationHeaderHTTPRedirectHandler(HTTPRedirectHandler):
+    def __init__(self, disable_removal_header = False):
+        self.disable_removal_header = disable_removal_header
+
+    def redirect_request(self, req, fp, code, msag, headers, newurl):
+        if self.disable_removal_header is False:
+            newheaders = dict()
+            for k,v in req.headers.items():
+                if k.lower() != "authorization":
+                    newheaders[k] = v
+            req.headers = newheaders
+
+        return HTTPRedirectHandler.redirect_request(
+            self, req, fp, code, msag, headers, newurl)
 
 class ApiConnection(object):
 
@@ -273,6 +288,9 @@ class ApiConnection(object):
         Given a 401 error, the update_token function is called
         to try the request again, and only then the error returned.
         '''
+
+        opener = build_opener(RemoveAuthorizationHeaderHTTPRedirectHandler)
+        install_opener(opener)
 
         try:
             response = urlopen(request)
