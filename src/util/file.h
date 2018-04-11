@@ -1,4 +1,5 @@
 /* 
+ * Copyright (c) 2017-2018, SyLabs, Inc. All rights reserved.
  * Copyright (c) 2017, SingularityWare, LLC. All rights reserved.
  *
  * Copyright (c) 2015-2017, Gregory M. Kurtzer. All rights reserved.
@@ -38,6 +39,7 @@ int is_suid(char *path);
 int is_owner(char *path, uid_t uid);
 int is_blk(char *path);
 int is_chr(char *path);
+int is_sock(char *path);
 int s_mkpath(char *dir, mode_t mode);
 int s_rmdir(char *dir);
 int copy_file(char * source, char * dest);

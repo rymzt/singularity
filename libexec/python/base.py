@@ -21,12 +21,13 @@ import os
 try:
     # TODO: layer downloading get 504 response
     from urllib.parse import urlencode, urlparse
-    from urllib.request import urlopen, Request, unquote, install_opener, build_opener, HTTPRedirectHandler
+    from urllib.request import Request, HTTPRedirectHandler, install_opener, build_opener
     from urllib.error import HTTPError
 except ImportError:
-    from urllib import urlencode, unquote
     from urlparse import urlparse
-    from urllib2 import urlopen, Request, HTTPError, install_opener, build_opener, HTTPRedirectHandler
+    from urllib import urlencode
+    from urllib2 import Request, HTTPError
+    from urllib2 import HTTPRedirectHandler, install_opener, build_opener
 
 
 class MultiProcess(object):
@@ -140,6 +141,31 @@ class RemoveAuthorizationHeaderHTTPRedirectHandler(HTTPRedirectHandler):
 
         return HTTPRedirectHandler.redirect_request(
             self, req, fp, code, msag, headers, newurl)
+
+class AuthRedirectHandler(HTTPRedirectHandler):
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        newreq = HTTPRedirectHandler.redirect_request(
+            self, req, fp, code, msg, headers, newurl)
+
+        if 'Authorization' not in req.headers:
+            return newreq
+
+        src = urlparse(req.get_full_url()).hostname
+        dest = urlparse(newreq.get_full_url()).hostname
+
+        if dest != src:
+            bot.debug('AuthRedirectHandler: stripping "Authorization" header '
+                      "(%s != %s)" % (dest, src))
+            del newreq.headers['Authorization']
+
+        return newreq
+
+
+def safe_urlopen(url, data=None):
+    opener = build_opener(AuthRedirectHandler())
+    return opener.open(url, data=data)
+
 
 class ApiConnection(object):
 
@@ -293,7 +319,7 @@ class ApiConnection(object):
         install_opener(opener)
 
         try:
-            response = urlopen(request)
+            response = safe_urlopen(request)
 
         # If we have an HTTPError, try to follow the response
         except HTTPError as error:
@@ -306,7 +332,7 @@ class ApiConnection(object):
                 try:
                     request = self.prepare_request(request.get_full_url(),
                                                    headers=self.headers)
-                    response = urlopen(request)
+                    response = safe_urlopen(request)
                 except HTTPError as error:
                     bot.debug('Http Error with code %s' % (error.code))
                     return error

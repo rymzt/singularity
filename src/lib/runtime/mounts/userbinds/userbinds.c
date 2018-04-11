@@ -1,4 +1,5 @@
 /* 
+ * Copyright (c) 2017-2018, SyLabs, Inc. All rights reserved.
  * Copyright (c) 2017, SingularityWare, LLC. All rights reserved.
  *
  * Copyright (c) 2015-2017, Gregory M. Kurtzer. All rights reserved.
@@ -95,8 +96,8 @@ int _singularity_runtime_mount_userbinds(void) {
 
             singularity_message(DEBUG, "Checking if bind point is already mounted: %s\n", dest);
             if ( check_mounted(dest) >= 0 ) {
-                singularity_message(WARNING, "Not mounting requested bind point (already mounted in container): %s\n", dest);
-                continue;
+                singularity_message(ERROR, "Not mounting requested bind point (already mounted in container): %s\n", dest);
+                ABORT(255);
             }
 
             if ( ( is_file(source) == 0 ) && ( is_file(joinpath(container_dir, dest)) < 0 ) ) {
@@ -150,7 +151,6 @@ int _singularity_runtime_mount_userbinds(void) {
                 }
             }
 
-            singularity_priv_escalate();
             singularity_message(VERBOSE, "Binding '%s' to '%s/%s'\n", source, container_dir, dest);
             if ( singularity_mount(source, joinpath(container_dir, dest), NULL, MS_BIND|MS_NOSUID|MS_NODEV|MS_REC, NULL) < 0 ) {
                 singularity_message(ERROR, "There was an error binding the path %s: %s\n", source, strerror(errno));
@@ -178,8 +178,6 @@ int _singularity_runtime_mount_userbinds(void) {
                     }
                 }
             }
-            singularity_priv_drop();
-
         }
 
         singularity_message(DEBUG, "Unsetting environment variable 'SINGULARITY_BINDPATH'\n");
