@@ -22,11 +22,12 @@ SINGULARITYENV_HISTFILE=""
 
 export SINGULARITYENV_PATH SINGULARITYENV_HISTFILE
 
-
 # For Infiniband setting on AAIC
-for i in `ldconfig -p | grep -E "/libib|/libgpfs|/libnuma|/libmlx|/libnl"`; do
+SINGULARITY_IBLIBLIST=`mktemp ${TMPDIR:-/tmp}/.singularity-ibliblist.XXXXXXXX`
+cat $SINGULARITY_sysconfdir"/singularity/ibliblist.conf" | grep -Ev "^#|^\s*$" > $SINGULARITY_IBLIBLIST
+for i in $(ldconfig -p | grep -f "${SINGULARITY_IBLIBLIST}"); do
     if [ -f "$i" ]; then
-        message 2 "Found a library: $i\n"
+	message 2 "Found IB library: $i\n"
         if [ -z "${SINGULARITY_CONTAINLIBS:-}" ]; then
             SINGULARITY_CONTAINLIBS="$i"
         else
@@ -34,8 +35,11 @@ for i in `ldconfig -p | grep -E "/libib|/libgpfs|/libnuma|/libmlx|/libnl"`; do
         fi
     fi
 done
+## FIXME for manual setting
+SINGULARITY_CONTAINLIBS="$SINGULARITY_CONTAINLIBS,/lib64/libmlx5-rdmav2.so"
+rm $SINGULARITY_IBLIBLIST
 if [ -z "${SINGULARITY_CONTAINLIBS:-}" ]; then
-    message WARN  "Could not find any IB-related libraries on this host!\n";
+    message WARN "Could not find any IB-related libraries on this host!\n"; 
 else
     export SINGULARITY_CONTAINLIBS
 fi
