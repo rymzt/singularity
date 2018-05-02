@@ -19,9 +19,9 @@ import os
 
 
 try:
-    # TODO: layer downloading get 504 response
+    # TODO: from urllib.* import install_opener, build_opener, HTTPRedirectHandler
     from urllib.parse import urlencode, urlparse
-    from urllib.request import Request, HTTPRedirectHandler, install_opener, build_opener
+    from urllib.request import Request, HTTPRedirectHandler, build_opener
     from urllib.error import HTTPError
 except ImportError:
     from urlparse import urlparse
