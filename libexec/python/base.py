@@ -19,7 +19,6 @@ import os
 
 
 try:
-    # TODO: from urllib.* import install_opener, build_opener, HTTPRedirectHandler
     from urllib.parse import urlencode, urlparse
     from urllib.request import Request, HTTPRedirectHandler, build_opener
     from urllib.error import HTTPError
@@ -27,7 +26,7 @@ except ImportError:
     from urlparse import urlparse
     from urllib import urlencode
     from urllib2 import Request, HTTPError
-    from urllib2 import HTTPRedirectHandler, install_opener, build_opener
+    from urllib2 import HTTPRedirectHandler, build_opener
 
 
 class MultiProcess(object):
