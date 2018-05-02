@@ -181,9 +181,6 @@ class DockerApiConnection(ApiConnection):
         https://docs.docker.com/registry/spec/auth/token/
         '''
 
-        if auth is None:
-            auth = self.auth
-
         if self.tokenExpires and self.tokenExpires > (time.time() - 5):
             bot.debug("Not renewing token - does not expire within 5s")
             return
@@ -313,13 +310,8 @@ class DockerApiConnection(ApiConnection):
         bot.verbose("Obtaining tags: %s" % base)
 
         # We use get_tags for a testing endpoint in update_token
-        headers=dict()
-        if self.auth is not None:
-            headers.update(self.auth)
         response = self.get(base,
-                            return_response=return_response,
-                            default_headers=False,
-                            headers=headers)
+                            return_response=return_response)
 
         if return_response:
             return response

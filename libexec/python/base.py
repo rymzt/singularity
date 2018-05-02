@@ -126,20 +126,6 @@ def multi_wrapper(func_args):
 def multi_package(func, args):
     return zip(itertools.repeat(func), args)
 
-class RemoveAuthorizationHeaderHTTPRedirectHandler(HTTPRedirectHandler):
-    def __init__(self, disable_removal_header = False):
-        self.disable_removal_header = disable_removal_header
-
-    def redirect_request(self, req, fp, code, msag, headers, newurl):
-        if self.disable_removal_header is False:
-            newheaders = dict()
-            for k,v in req.headers.items():
-                if k.lower() != "authorization":
-                    newheaders[k] = v
-            req.headers = newheaders
-
-        return HTTPRedirectHandler.redirect_request(
-            self, req, fp, code, msag, headers, newurl)
 
 class AuthRedirectHandler(HTTPRedirectHandler):
 
@@ -319,9 +305,6 @@ class ApiConnection(object):
         If updating_token is True we were called upstream from update_token, and
         shouldn't call it again.
         '''
-
-        opener = build_opener(RemoveAuthorizationHeaderHTTPRedirectHandler)
-        install_opener(opener)
 
         try:
             response = safe_urlopen(request)
