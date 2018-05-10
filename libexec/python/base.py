@@ -19,15 +19,14 @@ import os
 
 
 try:
-    # TODO: layer downloading get 504 response
     from urllib.parse import urlencode, urlparse
-    from urllib.request import Request, HTTPRedirectHandler, install_opener, build_opener
+    from urllib.request import Request, HTTPRedirectHandler, build_opener
     from urllib.error import HTTPError
 except ImportError:
     from urlparse import urlparse
     from urllib import urlencode
     from urllib2 import Request, HTTPError
-    from urllib2 import HTTPRedirectHandler, install_opener, build_opener
+    from urllib2 import HTTPRedirectHandler, build_opener
 
 
 class MultiProcess(object):
@@ -127,20 +126,6 @@ def multi_wrapper(func_args):
 def multi_package(func, args):
     return zip(itertools.repeat(func), args)
 
-class RemoveAuthorizationHeaderHTTPRedirectHandler(HTTPRedirectHandler):
-    def __init__(self, disable_removal_header = False):
-        self.disable_removal_header = disable_removal_header
-
-    def redirect_request(self, req, fp, code, msag, headers, newurl):
-        if self.disable_removal_header is False:
-            newheaders = dict()
-            for k,v in req.headers.items():
-                if k.lower() != "authorization":
-                    newheaders[k] = v
-            req.headers = newheaders
-
-        return HTTPRedirectHandler.redirect_request(
-            self, req, fp, code, msag, headers, newurl)
 
 class AuthRedirectHandler(HTTPRedirectHandler):
 
@@ -276,12 +261,14 @@ class ApiConnection(object):
             data=None,
             headers=None,
             default_headers=True,
-            return_response=False):
+            return_response=False,
+            updating_token=False):
 
         '''get will use requests to get a particular url
         :param data: a dictionary of key:value
                      items to add to the data args variable
         :param url: the url to get
+        :param updating_token: Set true if called from update_token
         :returns response: the requests response object, or stream
         '''
 
@@ -300,23 +287,24 @@ class ApiConnection(object):
                                        url=url)
 
         response = self.submit_request(request,
-                                       return_response=return_response)
+                                       return_response=return_response,
+                                       updating_token=updating_token)
 
         if return_response is True:
             return response
 
         return response.read().decode('utf-8')
 
-    def submit_request(self, request, return_response=False):
+    def submit_request(self, request, return_response=False, updating_token=False):
         '''submit_request will make the request,
         via a stream or not. If return response is True, the
         response is returned as is without further parsing.
         Given a 401 error, the update_token function is called
         to try the request again, and only then the error returned.
-        '''
 
-        opener = build_opener(RemoveAuthorizationHeaderHTTPRedirectHandler)
-        install_opener(opener)
+        If updating_token is True we were called upstream from update_token, and
+        shouldn't call it again.
+        '''
 
         try:
             response = safe_urlopen(request)
@@ -327,7 +315,7 @@ class ApiConnection(object):
             # Case 1: we have an http 401 error, and need to refresh token
             bot.debug('Http Error with code %s' % (error.code))
 
-            if error.code == 401:
+            if error.code == 401 and not updating_token:
                 self.update_token(response=error)
                 try:
                     request = self.prepare_request(request.get_full_url(),
@@ -355,6 +343,10 @@ class ApiConnection(object):
         else:
             request = Request(url=url,
                               headers=headers)
+
+            # Force User-Agent always
+            request.add_header('User-Agent', 'Singularity')
+
         return request
 
     def download_atomically(self,
