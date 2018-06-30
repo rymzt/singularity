@@ -119,6 +119,7 @@
 bind path = /etc/localtime
 bind path = /etc/hosts
 bind path = /etc/libibverbs.d
+bind path = /local
 
 
 # USER BIND CONTROL: [BOOL]
