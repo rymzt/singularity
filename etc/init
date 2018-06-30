@@ -38,7 +38,7 @@ export SINGULARITYENV_PATH
 SINGULARITYENV_HISTFILE=""
 export SINGULARITYENV_HISTFILE
 
-# For Infiniband setting on AAIC
+# For Infiniband setting on ABCI
 SINGULARITY_IBLIBLIST=`mktemp ${TMPDIR:-/tmp}/.singularity-ibliblist.XXXXXXXX`
 cat $SINGULARITY_sysconfdir"/singularity/ibliblist.conf" | grep -Ev "^#|^\s*$" > $SINGULARITY_IBLIBLIST
 
