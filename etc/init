@@ -39,6 +39,6 @@ SINGULARITYENV_HISTFILE=""
 export SINGULARITYENV_HISTFILE
 
 # For Infiniband setting on ABCI
-source $SINGULARITY_sysconfdir/singularity/function
+source $SINGULARITY_sysconfdir/singularity/functions
 prepare_iblibs
 logger
