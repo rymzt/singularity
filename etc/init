@@ -45,7 +45,7 @@ cat $SINGULARITY_sysconfdir"/singularity/ibliblist.conf" | grep -Ev "^#|^\s*$" >
 for i in $(cat ${SINGULARITY_IBLIBLIST}); do
     path="/lib64/$i"
     if [ -f $path ]; then
-        message 2 "Found IB library: $i\n"                                                                                                                                                                                    
+        message 2 "Found IB library: $i\n"            
         if [ -z "${SINGULARITY_CONTAINLIBS:-}" ]; then
             SINGULARITY_CONTAINLIBS="$path"
         else
