@@ -39,24 +39,6 @@ SINGULARITYENV_HISTFILE=""
 export SINGULARITYENV_HISTFILE
 
 # For Infiniband setting on ABCI
-SINGULARITY_IBLIBLIST=`mktemp ${TMPDIR:-/tmp}/.singularity-ibliblist.XXXXXXXX`
-cat $SINGULARITY_sysconfdir"/singularity/ibliblist.conf" | grep -Ev "^#|^\s*$" > $SINGULARITY_IBLIBLIST
-
-for i in $(cat ${SINGULARITY_IBLIBLIST}); do
-    path="/lib64/$i"
-    if [ -f $path ]; then
-        message 2 "Found IB library: $i\n"            
-        if [ -z "${SINGULARITY_CONTAINLIBS:-}" ]; then
-            SINGULARITY_CONTAINLIBS="$path"
-        else
-            SINGULARITY_CONTAINLIBS="$SINGULARITY_CONTAINLIBS,$path"
-        fi
-    fi
-done
-rm $SINGULARITY_IBLIBLIST
-
-if [ -z "${SINGULARITY_CONTAINLIBS:-}" ]; then
-    message WARN "Could not find any IB-related libraries on this host!\n";
-else
-    export SINGULARITY_CONTAINLIBS
-fi
+source $SINGULARITY_sysconfdir/singularity/function
+prepare_iblibs
+logger
