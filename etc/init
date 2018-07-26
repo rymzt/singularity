@@ -41,4 +41,6 @@ export SINGULARITYENV_HISTFILE
 # For Infiniband setting on ABCI
 source $SINGULARITY_sysconfdir/singularity/functions
 prepare_iblibs
-logger
+if [ $(get_my_rank) -eq 0 ]; then
+    logger
+fi

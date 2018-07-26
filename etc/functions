@@ -27,7 +27,6 @@ prepare_iblibs() {
     fi
 }
 
-
 logger() {
     local syslog_facility='local2.info'
     local cmdline="/bin/logger -p ${syslog_facility}"
@@ -42,4 +41,20 @@ logger() {
     fi
 
     ${cmdline}
+}
+
+get_my_rank() {
+    local my_rank=0
+    if [[ ! -z "${OMPI_COMM_WORLD_RANK:-}" ]]; then
+        # Open MPI
+        my_rank="${OMPI_COMM_WORLD_RANK}"
+    elif [[ ! -z "${PMI_RANK:-}" ]]; then
+        # MVAPICH2-GDR, Intel MPI
+        my_rank="${PMI_RANK}"
+    else
+        # Non MPI
+        :
+    fi
+
+    /bin/echo ${my_rank}
 }
